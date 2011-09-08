@@ -109,5 +109,23 @@ module EM
 
     end
 
+    class Database
+      alias :acreate_collection :create_collection
+
+      def create_collection(name)
+        f = Fiber.current
+        acreate_collection(name).callback { |res| f.resume(res) }
+        Fiber.yield
+      end
+
+      alias :acollections :collections
+
+      def collections
+        f = Fiber.current
+        acollections.callback { |res| f.resume(res) }
+        Fiber.yield
+      end
+    end
+
   end
 end
